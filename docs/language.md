@@ -86,3 +86,18 @@ The precedence climbs from `assignment` (lowest, right-associative) to `primary`
 ### `spawn`
 
 `spawn f(args);` starts `f` as a logically independent task. In v0.1 it runs synchronously. It's in the language so that fan-out from untrusted input can be expressed and, later, budgeted.
+
+## 4. Example
+
+```c
+int fib(untrusted int n) {
+    if (n <= 1) { return n; }
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main() {
+    untrusted int n = input_int();
+    print("fib = ", fib(n));
+    return 0;
+}
+```
