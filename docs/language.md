@@ -58,3 +58,14 @@ call           = IDENT "(" [ expression { "," expression } ] ")" ;
 ```
 
 The precedence climbs from `assignment` (lowest, right-associative) to `primary` (highest). Every binary level is left-associative.
+
+## 3. Types and semantics
+
+- Types: `int` (32-bit signed), `string`, `bool`, `void` (return type only).
+- Conditions in `if`, `while` and `for` must be `bool`. There's no implicit int→bool conversion, which keeps type errors easy to explain.
+- Arithmetic (`+ - * / %`) takes `int` operands. `+` on two `string`s concatenates them.
+- Comparisons (`< <= > >=`) take `int` operands and produce `bool`. `==` and `!=` need both operands to have the same type.
+- `&&`, `||` and `!` take `bool` operands.
+- Variables must be declared before use. Redeclaring a name in the same scope is an error, but shadowing in an inner scope is allowed.
+- Functions may be called before their definition, which allows mutual recursion. A non-`void` function must return a value on every path.
+- `int main()` is the entry point. If it's missing, the compiler issues a warning.
