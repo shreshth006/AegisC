@@ -69,3 +69,20 @@ The precedence climbs from `assignment` (lowest, right-associative) to `primary`
 - Variables must be declared before use. Redeclaring a name in the same scope is an error, but shadowing in an inner scope is allowed.
 - Functions may be called before their definition, which allows mutual recursion. A non-`void` function must return a value on every path.
 - `int main()` is the entry point. If it's missing, the compiler issues a warning.
+
+### Built-in functions
+
+| Signature | Notes |
+|---|---|
+| `void print(...)` | variadic; prints its arguments |
+| `string input()` | reads a line; **source of untrusted data** |
+| `int input_int()` | reads an integer; **source of untrusted data** |
+| `int len(string s)` | string length |
+
+### The `untrusted` qualifier
+
+`untrusted` marks a variable or parameter as holding externally controlled data. The values returned by `input()` and `input_int()` are always untrusted, whether or not the program says so. In the front end, `untrusted` is recorded in the symbol table. The PROBE pass (AegisBudget) uses it as a provenance seed: it propagates provenance through data flow and attaches a computational budget that can't be duplicated to every computation derived from it.
+
+### `spawn`
+
+`spawn f(args);` starts `f` as a logically independent task. In v0.1 it runs synchronously. It's in the language so that fan-out from untrusted input can be expressed and, later, budgeted.
