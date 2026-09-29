@@ -21,3 +21,15 @@ Source ─► Lexer ─► Parser/AST ─► Semantic ─► TAC ─► Optimize
 | Optimizer (constant folding/propagation, dead code) | ⏳ planned |
 | PROBE: provenance analysis + budget instrumentation | ⏳ planned |
 | Web visualizer + LLM tutor with RAG | ⏳ planned |
+
+## Quick start
+
+```bash
+python -m aegisc examples/hello.aeg              # all stages, pretty output
+python -m aegisc examples/hello.aeg --stage tokens
+python -m aegisc examples/errors.aeg             # see diagnostics from each stage
+python -m aegisc examples/fib_untrusted.aeg --json > out.json
+python -m pytest
+```
+
+Requires Python 3.10+. No third-party dependencies for the compiler core.
