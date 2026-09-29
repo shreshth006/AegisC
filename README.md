@@ -33,3 +33,18 @@ python -m pytest
 ```
 
 Requires Python 3.10+. No third-party dependencies for the compiler core.
+
+## Repository layout
+
+```
+aegisc/        compiler package (lexer, parser, AST, symbols, semantic, pipeline, CLI)
+examples/      sample AegisC programs
+tests/         pytest suite
+docs/          language spec, architecture, Review-1 documents
+```
+
+## Documentation
+
+- [Language specification and grammar](docs/language.md)
+- [Architecture](docs/architecture.md)
+- Review 1: [Problem & objectives](docs/review1/01-problem-objectives.md) · [Literature survey](docs/review1/02-literature-survey.md) · [Novelty](docs/review1/03-novelty.md) · [Implementation status](docs/review1/04-implementation-status.md)
