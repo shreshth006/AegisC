@@ -58,3 +58,16 @@ class TokenType(str, Enum):
     SEMI = ";"
 
     EOF = "EOF"
+
+
+KEYWORDS: dict[str, TokenType] = {
+    t.value: t
+    for t in (
+        TokenType.INT, TokenType.STRING, TokenType.BOOL, TokenType.VOID,
+        TokenType.IF, TokenType.ELSE, TokenType.WHILE, TokenType.FOR,
+        TokenType.RETURN, TokenType.TRUE, TokenType.FALSE,
+        TokenType.UNTRUSTED, TokenType.SPAWN,
+    )
+}
+
+TYPE_KEYWORDS = frozenset({TokenType.INT, TokenType.STRING, TokenType.BOOL, TokenType.VOID})
