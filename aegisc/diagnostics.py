@@ -41,3 +41,7 @@ class Diagnostic:
         gutter = f"{self.line:>4} | "
         caret = " " * (len(gutter) + max(self.col - 1, 0)) + "^"
         return f"{head}\n{gutter}{text}\n{caret}"
+
+
+def has_errors(diags: list[Diagnostic]) -> bool:
+    return any(d.severity is Severity.ERROR for d in diags)
