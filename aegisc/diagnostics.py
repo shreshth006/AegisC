@@ -27,3 +27,17 @@ class Diagnostic:
         d = asdict(self)
         d["severity"] = self.severity.value
         return d
+
+    def format(self, source: str | None = None) -> str:
+        """Render as `line:col: severity [stage]: message`, plus a caret
+        under the offending column when the source text is available."""
+        head = f"{self.line}:{self.col}: {self.severity.value} [{self.stage}]: {self.message}"
+        if not source:
+            return head
+        lines = source.splitlines()
+        if not 1 <= self.line <= len(lines):
+            return head
+        text = lines[self.line - 1].expandtabs(4)
+        gutter = f"{self.line:>4} | "
+        caret = " " * (len(gutter) + max(self.col - 1, 0)) + "^"
+        return f"{head}\n{gutter}{text}\n{caret}"
