@@ -13,3 +13,17 @@ from enum import Enum
 class Severity(str, Enum):
     ERROR = "error"
     WARNING = "warning"
+
+
+@dataclass(frozen=True)
+class Diagnostic:
+    stage: str          # "lexer" | "parser" | "semantic" | ...
+    severity: Severity
+    message: str
+    line: int
+    col: int
+
+    def to_dict(self) -> dict:
+        d = asdict(self)
+        d["severity"] = self.severity.value
+        return d
