@@ -10,3 +10,18 @@ class TokenType(str, Enum):
     IDENT = "IDENT"
     INT_LIT = "INT_LIT"
     STRING_LIT = "STRING_LIT"
+
+    # keywords
+    INT = "int"
+    STRING = "string"
+    BOOL = "bool"
+    VOID = "void"
+    IF = "if"
+    ELSE = "else"
+    WHILE = "while"
+    FOR = "for"
+    RETURN = "return"
+    TRUE = "true"
+    FALSE = "false"
+    UNTRUSTED = "untrusted"
+    SPAWN = "spawn"
