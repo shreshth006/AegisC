@@ -85,3 +85,18 @@ ONE_CHAR_OPS: dict[str, TokenType] = {
     "!": TokenType.NOT, "(": TokenType.LPAREN, ")": TokenType.RPAREN,
     "{": TokenType.LBRACE, "}": TokenType.RBRACE, ",": TokenType.COMMA, ";": TokenType.SEMI,
 }
+
+
+def category(tt: TokenType) -> str:
+    """Coarse category used by the visualizer to colour tokens."""
+    if tt in KEYWORDS.values():
+        return "keyword"
+    if tt is TokenType.IDENT:
+        return "identifier"
+    if tt in (TokenType.INT_LIT, TokenType.STRING_LIT):
+        return "literal"
+    if tt is TokenType.EOF:
+        return "eof"
+    if tt.value in "(){},;":
+        return "delimiter"
+    return "operator"
