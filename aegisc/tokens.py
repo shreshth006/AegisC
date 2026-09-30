@@ -100,3 +100,25 @@ def category(tt: TokenType) -> str:
     if tt.value in "(){},;":
         return "delimiter"
     return "operator"
+
+
+@dataclass(frozen=True)
+class Token:
+    type: TokenType
+    lexeme: str
+    line: int
+    col: int
+    value: object = None   # decoded value for literals (int or str)
+
+    def to_dict(self) -> dict:
+        return {
+            "type": self.type.name,
+            "category": category(self.type),
+            "lexeme": self.lexeme,
+            "value": self.value,
+            "line": self.line,
+            "col": self.col,
+        }
+
+    def __repr__(self) -> str:
+        return f"Token({self.type.name}, {self.lexeme!r}, {self.line}:{self.col})"
