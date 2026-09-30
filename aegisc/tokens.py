@@ -71,3 +71,17 @@ KEYWORDS: dict[str, TokenType] = {
 }
 
 TYPE_KEYWORDS = frozenset({TokenType.INT, TokenType.STRING, TokenType.BOOL, TokenType.VOID})
+
+# Longest-match first: two-character operators are tried before one-character ones.
+TWO_CHAR_OPS: dict[str, TokenType] = {
+    "+=": TokenType.PLUS_ASSIGN, "-=": TokenType.MINUS_ASSIGN,
+    "*=": TokenType.STAR_ASSIGN, "/=": TokenType.SLASH_ASSIGN,
+    "==": TokenType.EQ, "!=": TokenType.NE, "<=": TokenType.LE, ">=": TokenType.GE,
+    "&&": TokenType.AND, "||": TokenType.OR, "++": TokenType.INC, "--": TokenType.DEC,
+}
+ONE_CHAR_OPS: dict[str, TokenType] = {
+    "+": TokenType.PLUS, "-": TokenType.MINUS, "*": TokenType.STAR, "/": TokenType.SLASH,
+    "%": TokenType.PERCENT, "=": TokenType.ASSIGN, "<": TokenType.LT, ">": TokenType.GT,
+    "!": TokenType.NOT, "(": TokenType.LPAREN, ")": TokenType.RPAREN,
+    "{": TokenType.LBRACE, "}": TokenType.RBRACE, ",": TokenType.COMMA, ";": TokenType.SEMI,
+}
