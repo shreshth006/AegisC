@@ -48,3 +48,13 @@ class TokenType(str, Enum):
     NOT = "!"
     INC = "++"
     DEC = "--"
+
+    # delimiters
+    LPAREN = "("
+    RPAREN = ")"
+    LBRACE = "{"
+    RBRACE = "}"
+    COMMA = ","
+    SEMI = ";"
+
+    EOF = "EOF"
