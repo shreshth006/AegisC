@@ -22,3 +22,21 @@ class Lexer:
         self.col = 1
         self.tokens: list[Token] = []
         self.diagnostics: list[Diagnostic] = []
+
+    # -- character helpers -------------------------------------------------
+    def _peek(self, offset: int = 0) -> str:
+        i = self.pos + offset
+        return self.src[i] if i < len(self.src) else ""
+
+    def _advance(self) -> str:
+        ch = self.src[self.pos]
+        self.pos += 1
+        if ch == "\n":
+            self.line += 1
+            self.col = 1
+        else:
+            self.col += 1
+        return ch
+
+    def _error(self, msg: str, line: int, col: int) -> None:
+        self.diagnostics.append(Diagnostic("lexer", Severity.ERROR, msg, line, col))
