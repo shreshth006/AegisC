@@ -76,3 +76,20 @@ class Lexer:
                 return
             self._advance()
         self._error("unterminated block comment", line, col)
+
+    def _number(self) -> None:
+        line, col, start = self.line, self.col, self.pos
+        while self._peek().isdigit():
+            self._advance()
+        # `123abc` is one malformed token, not INT followed by IDENT.
+        if self._peek().isalpha() or self._peek() == "_":
+            while self._peek().isalnum() or self._peek() == "_":
+                self._advance()
+            self._error(f"invalid numeric literal '{self.src[start:self.pos]}'", line, col)
+            return
+        text = self.src[start:self.pos]
+        value = int(text)
+        if value > INT_MAX:
+            self._error(f"integer literal {text} exceeds 32-bit range", line, col)
+            value = INT_MAX
+        self.tokens.append(Token(TokenType.INT_LIT, text, line, col, value))
