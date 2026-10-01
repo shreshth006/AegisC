@@ -35,3 +35,19 @@ def test_positions_are_one_based_and_track_newlines():
 
 def test_comments_are_skipped():
     assert types("a // line\n/* block\n comment */ b") == [T.IDENT, T.IDENT, T.EOF]
+
+
+def test_unterminated_block_comment_reported():
+    _, diags = tokenize("a /* never closed")
+    assert len(diags) == 1 and "unterminated block comment" in diags[0].message
+
+
+def test_unterminated_string_reported_with_position():
+    _, diags = tokenize('x = "abc\ny;')
+    assert diags[0].message == "unterminated string literal"
+    assert (diags[0].line, diags[0].col) == (1, 5)
+
+
+def test_bad_escape_reported():
+    _, diags = tokenize('"a\\qb"')
+    assert "unknown escape" in diags[0].message
