@@ -102,3 +102,28 @@ class Lexer:
         ttype = KEYWORDS.get(text, TokenType.IDENT)
         value = {"true": True, "false": False}.get(text) if ttype in (TokenType.TRUE, TokenType.FALSE) else None
         self.tokens.append(Token(ttype, text, line, col, value))
+
+    def _string(self) -> None:
+        line, col, start = self.line, self.col, self.pos
+        self._advance()  # opening quote
+        chars: list[str] = []
+        while True:
+            ch = self._peek()
+            if ch == "" or ch == "\n":
+                self._error("unterminated string literal", line, col)
+                return
+            if ch == '"':
+                self._advance()
+                break
+            if ch == "\\":
+                esc_line, esc_col = self.line, self.col
+                self._advance()
+                nxt = self._peek()
+                if nxt in ESCAPES:
+                    chars.append(ESCAPES[nxt])
+                    self._advance()
+                else:
+                    self._error(f"unknown escape sequence '\\{nxt}'", esc_line, esc_col)
+                continue
+            chars.append(self._advance())
+        self.tokens.append(Token(TokenType.STRING_LIT, self.src[start:self.pos], line, col, "".join(chars)))
