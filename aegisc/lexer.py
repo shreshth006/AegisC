@@ -61,3 +61,18 @@ class Lexer:
                 self._operator()
         self.tokens.append(Token(TokenType.EOF, "", self.line, self.col))
         return self.tokens
+
+    # -- scanners ----------------------------------------------------------
+    def _skip_line_comment(self) -> None:
+        while self.pos < len(self.src) and self._peek() != "\n":
+            self._advance()
+
+    def _skip_block_comment(self) -> None:
+        line, col = self.line, self.col
+        self._advance(); self._advance()  # consume /*
+        while self.pos < len(self.src):
+            if self._peek() == "*" and self._peek(1) == "/":
+                self._advance(); self._advance()
+                return
+            self._advance()
+        self._error("unterminated block comment", line, col)
