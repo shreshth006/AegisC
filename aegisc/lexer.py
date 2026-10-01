@@ -143,3 +143,9 @@ class Lexer:
         self._advance()
         hint = " (did you mean '&&' or '||'?)" if ch in "&|" else ""
         self._error(f"unexpected character '{ch}'{hint}", line, col)
+
+
+def tokenize(source: str) -> tuple[list[Token], list[Diagnostic]]:
+    lx = Lexer(source)
+    tokens = lx.tokenize()
+    return tokens, lx.diagnostics
