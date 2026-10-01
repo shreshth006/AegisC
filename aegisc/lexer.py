@@ -93,3 +93,12 @@ class Lexer:
             self._error(f"integer literal {text} exceeds 32-bit range", line, col)
             value = INT_MAX
         self.tokens.append(Token(TokenType.INT_LIT, text, line, col, value))
+
+    def _identifier(self) -> None:
+        line, col, start = self.line, self.col, self.pos
+        while self._peek().isalnum() or self._peek() == "_":
+            self._advance()
+        text = self.src[start:self.pos]
+        ttype = KEYWORDS.get(text, TokenType.IDENT)
+        value = {"true": True, "false": False}.get(text) if ttype in (TokenType.TRUE, TokenType.FALSE) else None
+        self.tokens.append(Token(ttype, text, line, col, value))
