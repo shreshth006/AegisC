@@ -127,3 +127,19 @@ class Lexer:
                 continue
             chars.append(self._advance())
         self.tokens.append(Token(TokenType.STRING_LIT, self.src[start:self.pos], line, col, "".join(chars)))
+
+    def _operator(self) -> None:
+        line, col = self.line, self.col
+        two = self._peek() + self._peek(1)
+        if two in TWO_CHAR_OPS:
+            self._advance(); self._advance()
+            self.tokens.append(Token(TWO_CHAR_OPS[two], two, line, col))
+            return
+        ch = self._peek()
+        if ch in ONE_CHAR_OPS:
+            self._advance()
+            self.tokens.append(Token(ONE_CHAR_OPS[ch], ch, line, col))
+            return
+        self._advance()
+        hint = " (did you mean '&&' or '||'?)" if ch in "&|" else ""
+        self._error(f"unexpected character '{ch}'{hint}", line, col)
