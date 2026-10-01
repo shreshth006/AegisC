@@ -51,3 +51,21 @@ def test_unterminated_string_reported_with_position():
 def test_bad_escape_reported():
     _, diags = tokenize('"a\\qb"')
     assert "unknown escape" in diags[0].message
+
+
+def test_invalid_numeric_literal():
+    toks, diags = tokenize("123abc;")
+    assert "invalid numeric literal '123abc'" in diags[0].message
+    assert [t.type for t in toks] == [T.SEMI, T.EOF]
+
+
+def test_integer_overflow():
+    _, diags = tokenize("99999999999")
+    assert "exceeds 32-bit range" in diags[0].message
+
+
+def test_recovery_continues_after_bad_char():
+    toks, diags = tokenize("a @ b & c")
+    assert [t.type for t in toks] == [T.IDENT, T.IDENT, T.IDENT, T.EOF]
+    assert len(diags) == 2
+    assert "did you mean '&&'" in diags[1].message
