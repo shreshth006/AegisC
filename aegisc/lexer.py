@@ -40,3 +40,24 @@ class Lexer:
 
     def _error(self, msg: str, line: int, col: int) -> None:
         self.diagnostics.append(Diagnostic("lexer", Severity.ERROR, msg, line, col))
+
+    # -- main loop ---------------------------------------------------------
+    def tokenize(self) -> list[Token]:
+        while self.pos < len(self.src):
+            ch = self._peek()
+            if ch in " \t\r\n":
+                self._advance()
+            elif ch == "/" and self._peek(1) == "/":
+                self._skip_line_comment()
+            elif ch == "/" and self._peek(1) == "*":
+                self._skip_block_comment()
+            elif ch.isdigit():
+                self._number()
+            elif ch.isalpha() or ch == "_":
+                self._identifier()
+            elif ch == '"':
+                self._string()
+            else:
+                self._operator()
+        self.tokens.append(Token(TokenType.EOF, "", self.line, self.col))
+        return self.tokens
