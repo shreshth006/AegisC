@@ -146,3 +146,18 @@ class Parser:
         ty = self._type()
         name = self._expect(T.IDENT, "a variable name")
         return self._var_decl_rest(start, untrusted, ty.lexeme, name.lexeme)
+
+    # -- statements ----------------------------------------------------------
+    def _block(self) -> A.Block:
+        start = self._expect(T.LBRACE, "'{'")
+        body: list[A.Stmt] = []
+        while not self._check(T.RBRACE, T.EOF):
+            before = self.i
+            try:
+                body.append(self._statement())
+            except ParseError:
+                self._sync_statement()
+                if self.i == before:
+                    self._advance()
+        self._expect(T.RBRACE, "'}' to close block")
+        return A.Block(body, **self._pos(start))
