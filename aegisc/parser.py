@@ -89,3 +89,32 @@ class Parser:
             elif depth == 0 and self.cur.type in TYPE_KEYWORDS | {T.UNTRUSTED}:
                 return
             self._advance()
+
+    # -- declarations --------------------------------------------------------
+    def parse_program(self) -> A.Program:
+        start = self.cur
+        decls: list[A.Node] = []
+        while not self._check(T.EOF):
+            before = self.i
+            try:
+                decls.append(self._declaration())
+            except ParseError:
+                self._sync_toplevel()
+                if self.i == before:  # guarantee progress
+                    self._advance()
+        return A.Program(decls, **self._pos(start))
+
+    def _type(self) -> Token:
+        if self.cur.type in TYPE_KEYWORDS:
+            return self._advance()
+        self._expect(T.INT, "a type (int, string, bool, void)")
+        raise AssertionError  # unreachable
+
+    def _declaration(self) -> A.Node:
+        start = self.cur
+        untrusted = self._match(T.UNTRUSTED) is not None
+        ty = self._type()
+        name = self._expect(T.IDENT, "an identifier")
+        if self._check(T.LPAREN) and not untrusted:
+            return self._func_rest(start, ty.lexeme, name.lexeme)
+        return self._var_decl_rest(start, untrusted, ty.lexeme, name.lexeme)
