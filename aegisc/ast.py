@@ -155,3 +155,24 @@ class Spawn(Stmt):
 @dataclass
 class ExprStmt(Stmt):
     expr: Expr
+
+
+# -------------------------------------------------------------- declarations
+@dataclass
+class Param(Node):
+    type: str
+    name: str
+    untrusted: bool = False
+
+
+@dataclass
+class FuncDecl(Node):
+    ret_type: str
+    name: str
+    params: list[Param]
+    body: Block
+
+
+@dataclass
+class Program(Node):
+    decls: list[Node]          # FuncDecl | VarDecl
