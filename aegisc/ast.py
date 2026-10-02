@@ -126,3 +126,32 @@ class If(Stmt):
     cond: Expr
     then: Stmt
     else_: Optional[Stmt]
+
+
+@dataclass
+class While(Stmt):
+    cond: Expr
+    body: Stmt
+
+
+@dataclass
+class For(Stmt):
+    init: Optional[Stmt]       # VarDecl or ExprStmt
+    cond: Optional[Expr]
+    update: Optional[Expr]
+    body: Stmt
+
+
+@dataclass
+class Return(Stmt):
+    value: Optional[Expr]
+
+
+@dataclass
+class Spawn(Stmt):
+    call: Call
+
+
+@dataclass
+class ExprStmt(Stmt):
+    expr: Expr
