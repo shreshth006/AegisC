@@ -118,3 +118,31 @@ class Parser:
         if self._check(T.LPAREN) and not untrusted:
             return self._func_rest(start, ty.lexeme, name.lexeme)
         return self._var_decl_rest(start, untrusted, ty.lexeme, name.lexeme)
+
+    def _func_rest(self, start: Token, ret: str, name: str) -> A.FuncDecl:
+        self._expect(T.LPAREN, "'('")
+        params: list[A.Param] = []
+        if not self._check(T.RPAREN):
+            while True:
+                pstart = self.cur
+                pu = self._match(T.UNTRUSTED) is not None
+                pty = self._type()
+                pname = self._expect(T.IDENT, "a parameter name")
+                params.append(A.Param(pty.lexeme, pname.lexeme, pu, **self._pos(pstart)))
+                if not self._match(T.COMMA):
+                    break
+        self._expect(T.RPAREN, "')' after parameters")
+        body = self._block()
+        return A.FuncDecl(ret, name, params, body, **self._pos(start))
+
+    def _var_decl_rest(self, start: Token, untrusted: bool, ty: str, name: str) -> A.VarDecl:
+        init = self._expression() if self._match(T.ASSIGN) else None
+        self._expect(T.SEMI, "';' after declaration")
+        return A.VarDecl(ty, name, init, untrusted, **self._pos(start))
+
+    def _var_decl(self) -> A.VarDecl:
+        start = self.cur
+        untrusted = self._match(T.UNTRUSTED) is not None
+        ty = self._type()
+        name = self._expect(T.IDENT, "a variable name")
+        return self._var_decl_rest(start, untrusted, ty.lexeme, name.lexeme)
