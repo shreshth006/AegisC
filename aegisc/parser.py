@@ -28,3 +28,41 @@ class Parser:
         self.toks = tokens
         self.i = 0
         self.diagnostics: list[Diagnostic] = []
+
+    # -- token helpers -----------------------------------------------------
+    @property
+    def cur(self) -> Token:
+        return self.toks[self.i]
+
+    def _peek(self, k: int = 1) -> Token:
+        return self.toks[min(self.i + k, len(self.toks) - 1)]
+
+    def _check(self, *types: T) -> bool:
+        return self.cur.type in types
+
+    def _advance(self) -> Token:
+        tok = self.cur
+        if tok.type is not T.EOF:
+            self.i += 1
+        return tok
+
+    def _match(self, *types: T) -> Token | None:
+        return self._advance() if self._check(*types) else None
+
+    def _expect(self, ttype: T, what: str) -> Token:
+        if self._check(ttype):
+            return self._advance()
+        # Report a missing ';' or ')' at the end of the previous token,
+        # which is where the user's eye is, not at the next line.
+        anchor = self.toks[self.i - 1] if ttype in (T.SEMI, T.RPAREN) and self.i > 0 else self.cur
+        col = anchor.col + len(anchor.lexeme) if anchor is not self.cur else anchor.col
+        found = "end of file" if self.cur.type is T.EOF else f"'{self.cur.lexeme}'"
+        self._error(f"expected {what}, found {found}", anchor.line, col)
+        raise ParseError
+
+    def _error(self, msg: str, line: int, col: int) -> None:
+        self.diagnostics.append(Diagnostic("parser", Severity.ERROR, msg, line, col))
+
+    @staticmethod
+    def _pos(tok: Token) -> dict:
+        return {"line": tok.line, "col": tok.col}
