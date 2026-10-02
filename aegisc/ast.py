@@ -67,3 +67,36 @@ class BoolLiteral(Expr):
 @dataclass
 class Identifier(Expr):
     name: str
+
+
+@dataclass
+class Binary(Expr):
+    op: str
+    left: Expr
+    right: Expr
+
+
+@dataclass
+class Unary(Expr):
+    op: str            # "-" or "!"
+    operand: Expr
+
+
+@dataclass
+class IncDec(Expr):
+    op: str            # "++" or "--"
+    target: Identifier
+    prefix: bool
+
+
+@dataclass
+class Assign(Expr):
+    op: str            # "=", "+=", "-=", "*=", "/="
+    target: Identifier
+    value: Expr
+
+
+@dataclass
+class Call(Expr):
+    callee: str
+    args: list[Expr]
