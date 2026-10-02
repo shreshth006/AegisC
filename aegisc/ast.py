@@ -41,3 +41,29 @@ class Node:
             else:
                 d[f.name] = v
         return d
+
+
+# --------------------------------------------------------------- expressions
+@dataclass
+class Expr(Node):
+    ty: Optional[str] = field(default=None, kw_only=True)  # set by semantic analysis
+
+
+@dataclass
+class IntLiteral(Expr):
+    value: int
+
+
+@dataclass
+class StringLiteral(Expr):
+    value: str
+
+
+@dataclass
+class BoolLiteral(Expr):
+    value: bool
+
+
+@dataclass
+class Identifier(Expr):
+    name: str
