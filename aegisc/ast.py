@@ -100,3 +100,29 @@ class Assign(Expr):
 class Call(Expr):
     callee: str
     args: list[Expr]
+
+
+# ---------------------------------------------------------------- statements
+@dataclass
+class Stmt(Node):
+    pass
+
+
+@dataclass
+class VarDecl(Stmt):
+    type: str
+    name: str
+    init: Optional[Expr]
+    untrusted: bool = False
+
+
+@dataclass
+class Block(Stmt):
+    body: list[Stmt]
+
+
+@dataclass
+class If(Stmt):
+    cond: Expr
+    then: Stmt
+    else_: Optional[Stmt]
