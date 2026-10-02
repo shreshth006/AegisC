@@ -66,3 +66,26 @@ class Parser:
     @staticmethod
     def _pos(tok: Token) -> dict:
         return {"line": tok.line, "col": tok.col}
+
+    # -- recovery ----------------------------------------------------------
+    def _sync_statement(self) -> None:
+        while not self._check(T.EOF):
+            if self._match(T.SEMI):
+                return
+            if self._check(T.RBRACE) or self.cur.type in STMT_STARTS:
+                return
+            self._advance()
+
+    def _sync_toplevel(self) -> None:
+        depth = 0
+        while not self._check(T.EOF):
+            if self._check(T.LBRACE):
+                depth += 1
+            elif self._check(T.RBRACE):
+                depth -= 1
+                if depth <= 0:
+                    self._advance()
+                    return
+            elif depth == 0 and self.cur.type in TYPE_KEYWORDS | {T.UNTRUSTED}:
+                return
+            self._advance()
