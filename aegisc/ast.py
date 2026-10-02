@@ -176,3 +176,26 @@ class FuncDecl(Node):
 @dataclass
 class Program(Node):
     decls: list[Node]          # FuncDecl | VarDecl
+
+
+def dump(node: Node, indent: str = "") -> str:
+    """Readable indented tree, used by the CLI."""
+    attrs = []
+    for f in fields(node):
+        v = getattr(node, f.name)
+        if f.name in ("line", "col") or isinstance(v, (Node, list)) or v is None:
+            continue
+        if f.name == "untrusted" and not v:
+            continue
+        attrs.append(f"{f.name}={v!r}")
+    head = f"{indent}{node.kind}" + (f"({', '.join(attrs)})" if attrs else "") + f"  @{node.line}:{node.col}"
+    lines = [head]
+    for f in fields(node):
+        v = getattr(node, f.name)
+        if isinstance(v, Node):
+            lines.append(f"{indent}  .{f.name}:")
+            lines.append(dump(v, indent + "    "))
+        elif isinstance(v, list) and v and isinstance(v[0], Node):
+            lines.append(f"{indent}  .{f.name}:")
+            lines.extend(dump(x, indent + "    ") for x in v)
+    return "\n".join(lines)
