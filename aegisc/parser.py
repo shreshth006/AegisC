@@ -212,3 +212,21 @@ class Parser:
         tok = self._advance()
         cond = self._paren_cond("while")
         return A.While(cond, self._statement(), **self._pos(tok))
+
+    def _for(self) -> A.For:
+        tok = self._advance()
+        self._expect(T.LPAREN, "'(' after 'for'")
+        if self._match(T.SEMI):
+            init = None
+        elif self.cur.type in TYPE_KEYWORDS or self._check(T.UNTRUSTED):
+            init = self._var_decl()
+        else:
+            istart = self.cur
+            e = self._expression()
+            self._expect(T.SEMI, "';' after for-initializer")
+            init = A.ExprStmt(e, **self._pos(istart))
+        cond = None if self._check(T.SEMI) else self._expression()
+        self._expect(T.SEMI, "';' after for-condition")
+        update = None if self._check(T.RPAREN) else self._expression()
+        self._expect(T.RPAREN, "')' after for-clauses")
+        return A.For(init, cond, update, self._statement(), **self._pos(tok))
