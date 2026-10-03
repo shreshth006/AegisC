@@ -194,3 +194,21 @@ class Parser:
         expr = self._expression()
         self._expect(T.SEMI, "';' after expression")
         return A.ExprStmt(expr, **self._pos(tok))
+
+    def _paren_cond(self, kw: str) -> A.Expr:
+        self._expect(T.LPAREN, f"'(' after '{kw}'")
+        cond = self._expression()
+        self._expect(T.RPAREN, f"')' after {kw} condition")
+        return cond
+
+    def _if(self) -> A.If:
+        tok = self._advance()
+        cond = self._paren_cond("if")
+        then = self._statement()
+        else_ = self._statement() if self._match(T.ELSE) else None
+        return A.If(cond, then, else_, **self._pos(tok))
+
+    def _while(self) -> A.While:
+        tok = self._advance()
+        cond = self._paren_cond("while")
+        return A.While(cond, self._statement(), **self._pos(tok))
