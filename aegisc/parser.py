@@ -273,3 +273,23 @@ class Parser:
 
     def _factor(self):
         return self._binary_level(self._unary, {T.STAR, T.SLASH, T.PERCENT})
+
+    def _unary(self) -> A.Expr:
+        if self._check(T.NOT, T.MINUS):
+            op = self._advance()
+            return A.Unary(op.lexeme, self._unary(), **self._pos(op))
+        if self._check(T.INC, T.DEC):
+            op = self._advance()
+            name = self._expect(T.IDENT, f"a variable after '{op.lexeme}'")
+            return A.IncDec(op.lexeme, A.Identifier(name.lexeme, **self._pos(name)), True, **self._pos(op))
+        return self._postfix()
+
+    def _postfix(self) -> A.Expr:
+        expr = self._primary()
+        if self._check(T.INC, T.DEC):
+            op = self._advance()
+            if not isinstance(expr, A.Identifier):
+                self._error(f"'{op.lexeme}' can only be applied to a variable", op.line, op.col)
+                raise ParseError
+            return A.IncDec(op.lexeme, expr, False, line=expr.line, col=expr.col)
+        return expr
