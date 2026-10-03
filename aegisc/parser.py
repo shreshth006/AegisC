@@ -293,3 +293,29 @@ class Parser:
                 raise ParseError
             return A.IncDec(op.lexeme, expr, False, line=expr.line, col=expr.col)
         return expr
+
+    def _primary(self) -> A.Expr:
+        tok = self.cur
+        if self._match(T.INT_LIT):
+            return A.IntLiteral(tok.value, **self._pos(tok))
+        if self._match(T.STRING_LIT):
+            return A.StringLiteral(tok.value, **self._pos(tok))
+        if self._match(T.TRUE, T.FALSE):
+            return A.BoolLiteral(tok.value, **self._pos(tok))
+        if self._match(T.IDENT):
+            if self._match(T.LPAREN):
+                args: list[A.Expr] = []
+                if not self._check(T.RPAREN):
+                    args.append(self._expression())
+                    while self._match(T.COMMA):
+                        args.append(self._expression())
+                self._expect(T.RPAREN, "')' after arguments")
+                return A.Call(tok.lexeme, args, **self._pos(tok))
+            return A.Identifier(tok.lexeme, **self._pos(tok))
+        if self._match(T.LPAREN):
+            expr = self._expression()
+            self._expect(T.RPAREN, "')'")
+            return expr
+        found = "end of file" if tok.type is T.EOF else f"'{tok.lexeme}'"
+        self._error(f"expected an expression, found {found}", tok.line, tok.col)
+        raise ParseError
