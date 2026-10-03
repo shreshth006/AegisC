@@ -34,3 +34,35 @@ def test_global_and_untrusted_declarations():
     prog = parse_ok("int g = 1; untrusted string q;")
     assert isinstance(prog.decls[0], A.VarDecl) and prog.decls[0].init.value == 1
     assert prog.decls[1].untrusted and prog.decls[1].init is None
+
+
+def test_precedence_mul_over_add():
+    e = first_expr("1 + 2 * 3")
+    assert isinstance(e, A.Binary) and e.op == "+"
+    assert isinstance(e.right, A.Binary) and e.right.op == "*"
+
+
+def test_left_associativity():
+    e = first_expr("10 - 4 - 3")
+    assert e.op == "-" and isinstance(e.left, A.Binary) and e.left.op == "-"
+
+
+def test_logical_precedence_and_parentheses():
+    e = first_expr("a || b && c")
+    assert e.op == "||" and e.right.op == "&&"
+    e = first_expr("(1 + 2) * 3")
+    assert e.op == "*" and e.left.op == "+"
+
+
+def test_assignment_is_right_associative():
+    e = first_expr("a = b += 3")
+    assert isinstance(e, A.Assign) and e.op == "="
+    assert isinstance(e.value, A.Assign) and e.value.op == "+="
+
+
+def test_unary_incdec_and_calls():
+    e = first_expr("-f(1, x) + !b")
+    assert isinstance(e.left, A.Unary) and isinstance(e.left.operand, A.Call)
+    assert len(e.left.operand.args) == 2
+    assert isinstance(first_expr("i++"), A.IncDec) and not first_expr("i++").prefix
+    assert first_expr("--i").prefix
