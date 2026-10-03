@@ -95,3 +95,31 @@ def test_positions_recorded():
     ret = prog.decls[0].body.body[0]
     assert (ret.line, ret.col) == (2, 3)
     assert (ret.value.line, ret.value.col) == (2, 12)  # the '+' operator
+
+
+def test_missing_semicolon_reported_at_end_of_previous_token():
+    errs = parse_errs("int main() {\n  int x = 1\n  return x;\n}")
+    assert len(errs) == 1
+    assert errs[0].message == "expected ';' after declaration, found 'return'"
+    assert (errs[0].line, errs[0].col) == (2, 12)
+
+
+def test_recovery_reports_multiple_independent_errors():
+    errs = parse_errs("""
+        int main() {
+            int x = ;
+            x = 3
+            print(x);
+            y = (1 + ;
+            return 0;
+        }""")
+    assert len(errs) == 3
+
+
+def test_spawn_requires_call_and_else_without_if():
+    assert "'spawn' must be followed" in parse_errs("void f() { spawn x; }")[0].message
+    assert "'else' without" in parse_errs("void f() { else { } }")[0].message
+
+
+def test_invalid_assignment_target():
+    assert "left side of assignment" in parse_errs("void f() { 1 = 2; }")[0].message
