@@ -66,3 +66,32 @@ def test_unary_incdec_and_calls():
     assert len(e.left.operand.args) == 2
     assert isinstance(first_expr("i++"), A.IncDec) and not first_expr("i++").prefix
     assert first_expr("--i").prefix
+
+
+def test_control_flow_statements():
+    prog = parse_ok("""
+        void f() {
+            for (int i = 0; i < 10; i++) { if (i == 3) print(i); else { } }
+            while (true) { return; }
+            for (;;) { }
+            spawn g(1);
+        }""")
+    body = prog.decls[0].body.body
+    assert [type(s).__name__ for s in body] == ["For", "While", "For", "Spawn"]
+    loop = body[0]
+    assert isinstance(loop.init, A.VarDecl) and loop.cond.op == "<" and isinstance(loop.update, A.IncDec)
+    assert isinstance(loop.body.body[0], A.If) and loop.body.body[0].else_ is not None
+    assert body[2].init is None and body[2].cond is None and body[2].update is None
+
+
+def test_dangling_else_binds_to_nearest_if():
+    prog = parse_ok("void f() { if (a) if (b) x = 1; else x = 2; }")
+    outer = prog.decls[0].body.body[0]
+    assert outer.else_ is None and outer.then.else_ is not None
+
+
+def test_positions_recorded():
+    prog = parse_ok("int main() {\n  return 1 + 2;\n}")
+    ret = prog.decls[0].body.body[0]
+    assert (ret.line, ret.col) == (2, 3)
+    assert (ret.value.line, ret.value.col) == (2, 12)  # the '+' operator
