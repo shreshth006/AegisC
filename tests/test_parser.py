@@ -123,3 +123,18 @@ def test_spawn_requires_call_and_else_without_if():
 
 def test_invalid_assignment_target():
     assert "left side of assignment" in parse_errs("void f() { 1 = 2; }")[0].message
+
+
+def test_toplevel_recovery_keeps_later_functions():
+    toks, _ = tokenize("int f( { } int g() { return 1; }")
+    prog, errs = parse(toks)
+    assert errs
+    assert any(isinstance(d, A.FuncDecl) and d.name == "g" for d in prog.decls)
+
+
+def test_ast_to_dict_is_json_ready():
+    import json
+    prog = parse_ok("int main() { return 1; }")
+    d = prog.to_dict()
+    assert d["kind"] == "Program" and d["decls"][0]["kind"] == "FuncDecl"
+    json.dumps(d)
