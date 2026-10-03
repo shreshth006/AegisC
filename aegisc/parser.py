@@ -319,3 +319,9 @@ class Parser:
         found = "end of file" if tok.type is T.EOF else f"'{tok.lexeme}'"
         self._error(f"expected an expression, found {found}", tok.line, tok.col)
         raise ParseError
+
+
+def parse(tokens: list[Token]) -> tuple[A.Program, list[Diagnostic]]:
+    p = Parser(tokens)
+    prog = p.parse_program()
+    return prog, p.diagnostics
