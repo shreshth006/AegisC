@@ -230,3 +230,20 @@ class Parser:
         update = None if self._check(T.RPAREN) else self._expression()
         self._expect(T.RPAREN, "')' after for-clauses")
         return A.For(init, cond, update, self._statement(), **self._pos(tok))
+
+    # -- expressions (lowest to highest precedence) ------------------------------
+    def _expression(self) -> A.Expr:
+        return self._assignment()
+
+    def _assignment(self) -> A.Expr:
+        if self._check(T.IDENT) and self._peek().type in ASSIGN_OPS:
+            name = self._advance()
+            op = self._advance()
+            value = self._assignment()  # right-associative
+            target = A.Identifier(name.lexeme, **self._pos(name))
+            return A.Assign(op.lexeme, target, value, **self._pos(name))
+        expr = self._logic_or()
+        if self.cur.type in ASSIGN_OPS:
+            self._error("left side of assignment must be a variable", expr.line, expr.col)
+            raise ParseError
+        return expr
