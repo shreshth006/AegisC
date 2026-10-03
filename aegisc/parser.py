@@ -247,3 +247,29 @@ class Parser:
             self._error("left side of assignment must be a variable", expr.line, expr.col)
             raise ParseError
         return expr
+
+    def _binary_level(self, next_level, ops: set[T]) -> A.Expr:
+        left = next_level()
+        while self.cur.type in ops:
+            op = self._advance()
+            right = next_level()
+            left = A.Binary(op.lexeme, left, right, **self._pos(op))
+        return left
+
+    def _logic_or(self):
+        return self._binary_level(self._logic_and, {T.OR})
+
+    def _logic_and(self):
+        return self._binary_level(self._equality, {T.AND})
+
+    def _equality(self):
+        return self._binary_level(self._comparison, {T.EQ, T.NE})
+
+    def _comparison(self):
+        return self._binary_level(self._term, {T.LT, T.LE, T.GT, T.GE})
+
+    def _term(self):
+        return self._binary_level(self._factor, {T.PLUS, T.MINUS})
+
+    def _factor(self):
+        return self._binary_level(self._unary, {T.STAR, T.SLASH, T.PERCENT})
