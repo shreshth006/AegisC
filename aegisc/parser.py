@@ -161,3 +161,36 @@ class Parser:
                     self._advance()
         self._expect(T.RBRACE, "'}' to close block")
         return A.Block(body, **self._pos(start))
+
+    def _statement(self) -> A.Stmt:
+        tok = self.cur
+        if tok.type in TYPE_KEYWORDS or tok.type is T.UNTRUSTED:
+            return self._var_decl()
+        if tok.type is T.IF:
+            return self._if()
+        if tok.type is T.WHILE:
+            return self._while()
+        if tok.type is T.FOR:
+            return self._for()
+        if tok.type is T.RETURN:
+            self._advance()
+            value = None if self._check(T.SEMI) else self._expression()
+            self._expect(T.SEMI, "';' after return")
+            return A.Return(value, **self._pos(tok))
+        if tok.type is T.SPAWN:
+            self._advance()
+            expr = self._expression()
+            if not isinstance(expr, A.Call):
+                self._error("'spawn' must be followed by a function call", expr.line, expr.col)
+                raise ParseError
+            self._expect(T.SEMI, "';' after spawn")
+            return A.Spawn(expr, **self._pos(tok))
+        if tok.type is T.LBRACE:
+            return self._block()
+        if tok.type is T.ELSE:
+            self._error("'else' without a matching 'if'", tok.line, tok.col)
+            self._advance()
+            raise ParseError
+        expr = self._expression()
+        self._expect(T.SEMI, "';' after expression")
+        return A.ExprStmt(expr, **self._pos(tok))
