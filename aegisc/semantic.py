@@ -100,3 +100,18 @@ class SemanticAnalyzer:
             self._err(fn, f"function '{fn.name}' must return a value of type {fn.ret_type} on every path")
         self.table.exit()
         self.current_fn = None
+
+    def _var_decl(self, d: A.VarDecl, global_: bool = False) -> None:
+        if d.type == VOID:
+            self._err(d, f"variable '{d.name}' cannot have type void")
+        if d.init is not None:
+            t = self._expr(d.init)
+            self._require(d.init, t, d.type, f"cannot initialise {d.type} variable '{d.name}' with a value of type {t}")
+        sym = Symbol(d.name, "variable", d.type, d.line, d.col, untrusted=d.untrusted)
+        if global_:
+            sym.used = True  # don't nag about unused globals
+        prev = self.table.declare(sym)
+        if prev:
+            self._err(d, f"'{d.name}' is already declared in this scope (at {prev.line}:{prev.col})")
+
+    # -- statements ----------------------------------------------------------------
