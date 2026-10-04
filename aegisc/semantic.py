@@ -52,3 +52,33 @@ class SemanticAnalyzer:
         self.diagnostics.append(Diagnostic("semantic", Severity.WARNING, msg, node_or_sym.line, node_or_sym.col))
 
     # -- entry ---------------------------------------------------------------
+    def analyze(self, prog: A.Program) -> None:
+        # Pass 1: signatures (globals are declared in order during pass 2).
+        for d in prog.decls:
+            if isinstance(d, A.FuncDecl):
+                sym = Symbol(d.name, "function", d.ret_type, d.line, d.col,
+                             params=[p.type for p in d.params],
+                             param_untrusted=[p.untrusted for p in d.params])
+                prev = self.table.declare(sym)
+                if prev:
+                    what = "a built-in function" if prev.kind == "builtin" else f"already declared at {prev.line}:{prev.col}"
+                    self._err(d, f"function '{d.name}' redefined ({what})")
+
+        # Pass 2: bodies and globals.
+        for d in prog.decls:
+            if isinstance(d, A.FuncDecl):
+                self._function(d)
+            elif isinstance(d, A.VarDecl):
+                self._var_decl(d, global_=True)
+
+        main = self.table.global_scope.lookup_local("main")
+        if main is None or main.kind != "function":
+            self.diagnostics.append(Diagnostic("semantic", Severity.WARNING,
+                                               "program has no 'int main()' entry point", 1, 1))
+        elif main.type != INT or main.params:
+            self._warn(main, "'main' should be declared as 'int main()'")
+
+        for scope in self.table.scopes[1:]:
+            for sym in scope.symbols.values():
+                if sym.kind == "variable" and not sym.used:
+                    self._warn(sym, f"variable '{sym.name}' is declared but never used")
