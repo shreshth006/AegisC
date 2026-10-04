@@ -115,3 +115,35 @@ class SemanticAnalyzer:
             self._err(d, f"'{d.name}' is already declared in this scope (at {prev.line}:{prev.col})")
 
     # -- statements ----------------------------------------------------------------
+    def _stmt(self, s: A.Stmt) -> None:
+        if isinstance(s, A.VarDecl):
+            self._var_decl(s)
+        elif isinstance(s, A.Block):
+            self.table.enter(f"block@{s.line}:{s.col}")
+            for x in s.body:
+                self._stmt(x)
+            self.table.exit()
+        elif isinstance(s, A.If):
+            self._cond(s.cond, "if")
+            self._stmt(s.then)
+            if s.else_:
+                self._stmt(s.else_)
+        elif isinstance(s, A.While):
+            self._cond(s.cond, "while")
+            self._stmt(s.body)
+        elif isinstance(s, A.For):
+            self.table.enter(f"for@{s.line}:{s.col}")
+            if s.init:
+                self._stmt(s.init)
+            if s.cond:
+                self._cond(s.cond, "for")
+            if s.update:
+                self._expr(s.update)
+            self._stmt(s.body)
+            self.table.exit()
+        elif isinstance(s, A.Return):
+            self._return(s)
+        elif isinstance(s, A.Spawn):
+            self._expr(s.call)
+        elif isinstance(s, A.ExprStmt):
+            self._expr(s.expr)
