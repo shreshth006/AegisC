@@ -164,3 +164,18 @@ class SemanticAnalyzer:
             self._err(r, f"void function '{fn.name}' cannot return a value")
         else:
             self._require(r.value, t, fn.ret_type, f"'{fn.name}' returns {fn.ret_type}, but this expression has type {t}")
+
+    def _always_returns(self, s: Optional[A.Stmt]) -> bool:
+        if s is None:
+            return False
+        if isinstance(s, A.Return):
+            return True
+        if isinstance(s, A.Block):
+            return any(self._always_returns(x) for x in s.body)
+        if isinstance(s, A.If):
+            return self._always_returns(s.then) and self._always_returns(s.else_)
+        if isinstance(s, A.While) and isinstance(s.cond, A.BoolLiteral) and s.cond.value:
+            return True  # `while (true)` only exits through a return
+        return False
+
+    # -- expressions -----------------------------------------------------------------
