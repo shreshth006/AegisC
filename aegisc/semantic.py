@@ -179,3 +179,21 @@ class SemanticAnalyzer:
         return False
 
     # -- expressions -----------------------------------------------------------------
+    def _require(self, node: A.Node, got: str, want: str, msg: str) -> None:
+        if got != want and ERROR not in (got, want):
+            self._err(node, msg)
+
+    def _expr(self, e: A.Expr) -> str:
+        e.ty = self._infer(e)
+        return e.ty
+
+    def _resolve_var(self, ident: A.Identifier) -> Optional[Symbol]:
+        sym = self.table.lookup(ident.name)
+        if sym is None:
+            self._err(ident, f"use of undeclared identifier '{ident.name}'")
+            return None
+        if sym.kind in ("function", "builtin"):
+            self._err(ident, f"'{ident.name}' is a function, not a variable")
+            return None
+        sym.used = True
+        return sym
