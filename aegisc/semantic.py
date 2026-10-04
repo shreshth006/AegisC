@@ -147,3 +147,20 @@ class SemanticAnalyzer:
             self._expr(s.call)
         elif isinstance(s, A.ExprStmt):
             self._expr(s.expr)
+
+    def _cond(self, e: A.Expr, kw: str) -> None:
+        t = self._expr(e)
+        self._require(e, t, BOOL, f"{kw} condition must be bool, got {t}")
+
+    def _return(self, r: A.Return) -> None:
+        fn = self.current_fn
+        assert fn is not None
+        if r.value is None:
+            if fn.ret_type != VOID:
+                self._err(r, f"'{fn.name}' must return a value of type {fn.ret_type}")
+            return
+        t = self._expr(r.value)
+        if fn.ret_type == VOID:
+            self._err(r, f"void function '{fn.name}' cannot return a value")
+        else:
+            self._require(r.value, t, fn.ret_type, f"'{fn.name}' returns {fn.ret_type}, but this expression has type {t}")
