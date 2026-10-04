@@ -43,3 +43,12 @@ class SemanticAnalyzer:
         self.current_fn: Optional[A.FuncDecl] = None
         for name, (ret, params, src) in BUILTINS.items():
             self.table.declare(Symbol(name, "builtin", ret, params=params, untrusted=src))
+
+    # -- reporting ---------------------------------------------------------
+    def _err(self, node: A.Node, msg: str) -> None:
+        self.diagnostics.append(Diagnostic("semantic", Severity.ERROR, msg, node.line, node.col))
+
+    def _warn(self, node_or_sym, msg: str) -> None:
+        self.diagnostics.append(Diagnostic("semantic", Severity.WARNING, msg, node_or_sym.line, node_or_sym.col))
+
+    # -- entry ---------------------------------------------------------------
