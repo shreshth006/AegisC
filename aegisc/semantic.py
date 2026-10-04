@@ -29,3 +29,17 @@ BUILTINS: dict[str, tuple[str, Optional[list[str]], bool]] = {
     "len": (INT, [STRING], False),
 }
 UNTRUSTED_SOURCES = frozenset(n for n, (_, _, src) in BUILTINS.items() if src)
+
+
+def _a(t: str) -> str:
+    """'an int', 'a string' -- for readable messages."""
+    return f"an {t}" if t[:1] in "aeiou" else f"a {t}"
+
+
+class SemanticAnalyzer:
+    def __init__(self) -> None:
+        self.table = SymbolTable()
+        self.diagnostics: list[Diagnostic] = []
+        self.current_fn: Optional[A.FuncDecl] = None
+        for name, (ret, params, src) in BUILTINS.items():
+            self.table.declare(Symbol(name, "builtin", ret, params=params, untrusted=src))
