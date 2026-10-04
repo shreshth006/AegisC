@@ -60,3 +60,41 @@ class Scope:
             "parent": self.parent.id if self.parent else None,
             "symbols": [sym.to_dict() for sym in self.symbols.values()],
         }
+
+
+class SymbolTable:
+    def __init__(self) -> None:
+        self.scopes: list[Scope] = []
+        self.current: Scope = self._new_scope("global", None)
+
+    def _new_scope(self, name: str, parent: Optional[Scope]) -> Scope:
+        scope = Scope(len(self.scopes), name, parent, 0 if parent is None else parent.level + 1)
+        self.scopes.append(scope)
+        return scope
+
+    @property
+    def global_scope(self) -> Scope:
+        return self.scopes[0]
+
+    def enter(self, name: str) -> Scope:
+        self.current = self._new_scope(name, self.current)
+        return self.current
+
+    def exit(self) -> None:
+        assert self.current.parent is not None, "cannot exit global scope"
+        self.current = self.current.parent
+
+    def declare(self, sym: Symbol) -> Optional[Symbol]:
+        """Declare in the current scope. Returns the existing symbol on a
+        redeclaration, in which case nothing is added."""
+        existing = self.current.lookup_local(sym.name)
+        if existing:
+            return existing
+        self.current.symbols[sym.name] = sym
+        return None
+
+    def lookup(self, name: str) -> Optional[Symbol]:
+        return self.current.lookup(name)
+
+    def to_dict(self) -> list[dict]:
+        return [s.to_dict() for s in self.scopes]
