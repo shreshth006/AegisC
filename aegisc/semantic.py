@@ -82,3 +82,21 @@ class SemanticAnalyzer:
             for sym in scope.symbols.values():
                 if sym.kind == "variable" and not sym.used:
                     self._warn(sym, f"variable '{sym.name}' is declared but never used")
+
+    # -- declarations ------------------------------------------------------------
+    def _function(self, fn: A.FuncDecl) -> None:
+        self.current_fn = fn
+        self.table.enter(f"fn {fn.name}")
+        for p in fn.params:
+            if p.type == VOID:
+                self._err(p, f"parameter '{p.name}' cannot have type void")
+            prev = self.table.declare(Symbol(p.name, "parameter", p.type, p.line, p.col, untrusted=p.untrusted))
+            if prev:
+                self._err(p, f"duplicate parameter '{p.name}'")
+        # The body block shares the function scope, so a local can't silently shadow a parameter.
+        for stmt in fn.body.body:
+            self._stmt(stmt)
+        if fn.ret_type != VOID and not self._always_returns(fn.body):
+            self._err(fn, f"function '{fn.name}' must return a value of type {fn.ret_type} on every path")
+        self.table.exit()
+        self.current_fn = None
