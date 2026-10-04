@@ -31,3 +31,32 @@ class Symbol:
         if self.kind in ("function", "builtin"):
             d["params"] = self.params
         return d
+
+
+@dataclass
+class Scope:
+    id: int
+    name: str                     # "global", "fn main", "block@3:5", ...
+    parent: Optional["Scope"]
+    level: int
+    symbols: dict[str, Symbol] = field(default_factory=dict)
+
+    def lookup_local(self, name: str) -> Optional[Symbol]:
+        return self.symbols.get(name)
+
+    def lookup(self, name: str) -> Optional[Symbol]:
+        s: Optional[Scope] = self
+        while s is not None:
+            if name in s.symbols:
+                return s.symbols[name]
+            s = s.parent
+        return None
+
+    def to_dict(self) -> dict:
+        return {
+            "id": self.id,
+            "name": self.name,
+            "level": self.level,
+            "parent": self.parent.id if self.parent else None,
+            "symbols": [sym.to_dict() for sym in self.symbols.values()],
+        }
