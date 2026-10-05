@@ -172,3 +172,30 @@ def test_literal_division_by_zero():
 def test_errors_do_not_cascade():
     # One undeclared name should yield exactly one error, not a chain of type errors.
     assert errors_of("int main() { int y = nope + 1 * 2; return y; }") == ["use of undeclared identifier 'nope'"]
+
+
+def test_warnings_unused_and_missing_main():
+    _, _, errs, warns = check("int f() { int unused = 1; return 0; }")
+    assert errs == []
+    assert "variable 'unused' is declared but never used" in warns
+    assert "program has no 'int main()' entry point" in warns
+
+
+def test_types_are_annotated_on_ast():
+    prog, _, _, _ = check('int main() { string s = "a" + "b"; bool b = 1 < 2; print(s, b); return 0; }')
+    body = prog.decls[0].body.body
+    assert body[0].init.ty == "string"
+    assert body[1].init.ty == "bool"
+
+
+def test_symbol_table_records_untrusted_and_scopes():
+    _, table, _, _ = check("""
+        int f(untrusted int n) { return n; }
+        int main() { untrusted string q = input(); int k = f(len(q)); return k; }""")
+    names = [s.name for s in table.scopes]
+    assert names == ["global", "fn f", "fn main"]
+    f_scope, main_scope = table.scopes[1], table.scopes[2]
+    assert f_scope.symbols["n"].untrusted and f_scope.symbols["n"].kind == "parameter"
+    assert main_scope.symbols["q"].untrusted and not main_scope.symbols["k"].untrusted
+    assert table.global_scope.symbols["input"].untrusted  # built-in untrusted source
+    assert table.global_scope.symbols["f"].param_untrusted == [True]
