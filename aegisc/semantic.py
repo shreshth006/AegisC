@@ -288,3 +288,9 @@ class SemanticAnalyzer:
         elif VOID in arg_types:
             self._err(e, f"cannot pass a void value to '{e.callee}'")
         return sym.type
+
+
+def analyze(prog: A.Program) -> tuple[SymbolTable, list[Diagnostic]]:
+    sa = SemanticAnalyzer()
+    sa.analyze(prog)
+    return sa.table, sa.diagnostics
