@@ -268,3 +268,23 @@ class SemanticAnalyzer:
                 self._err(e, f"operator '{op}' needs bool operands, got {lt} and {rt}")
             return BOOL
         raise ValueError(op)
+
+    def _call(self, e: A.Call) -> str:
+        arg_types = [self._expr(a) for a in e.args]
+        sym = self.table.lookup(e.callee)
+        if sym is None:
+            self._err(e, f"call to undeclared function '{e.callee}'")
+            return ERROR
+        if sym.kind not in ("function", "builtin"):
+            self._err(e, f"'{e.callee}' is {_a(sym.type)} variable, not a function")
+            return ERROR
+        sym.used = True
+        if sym.params is not None:
+            if len(arg_types) != len(sym.params):
+                self._err(e, f"'{e.callee}' expects {len(sym.params)} argument(s), got {len(arg_types)}")
+            else:
+                for i, (arg, got, want) in enumerate(zip(e.args, arg_types, sym.params), 1):
+                    self._require(arg, got, want, f"argument {i} of '{e.callee}' should be {want}, got {got}")
+        elif VOID in arg_types:
+            self._err(e, f"cannot pass a void value to '{e.callee}'")
+        return sym.type
