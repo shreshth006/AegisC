@@ -152,3 +152,23 @@ def test_return_checks():
         "'b' returns int, but this expression has type string",
         "function 'c' must return a value of type int on every path",
     ]
+
+
+def test_void_variable_and_param():
+    errs = errors_of("void f(void p) { } int main() { void x; return 0; }")
+    assert errs == ["parameter 'p' cannot have type void", "variable 'x' cannot have type void"]
+
+
+def test_function_redefinition_and_builtin_clash():
+    errs = errors_of("int f() { return 1; } int f() { return 2; } int print() { return 0; } int main() { return 0; }")
+    assert errs[0].startswith("function 'f' redefined (already declared at 1:1)")
+    assert errs[1] == "function 'print' redefined (a built-in function)"
+
+
+def test_literal_division_by_zero():
+    assert errors_of("int main() { return 1 / 0; }") == ["division by zero"]
+
+
+def test_errors_do_not_cascade():
+    # One undeclared name should yield exactly one error, not a chain of type errors.
+    assert errors_of("int main() { int y = nope + 1 * 2; return y; }") == ["use of undeclared identifier 'nope'"]
