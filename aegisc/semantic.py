@@ -226,3 +226,17 @@ class SemanticAnalyzer:
         if isinstance(e, A.Call):
             return self._call(e)
         raise TypeError(f"unknown expression node {e.kind}")
+
+    def _assign(self, e: A.Assign) -> str:
+        sym = self._resolve_var(e.target)
+        target_t = sym.type if sym else ERROR
+        e.target.ty = target_t
+        value_t = self._expr(e.value)
+        if e.op == "=":
+            self._require(e.value, value_t, target_t, f"cannot assign {value_t} to '{e.target.name}' of type {target_t}")
+        elif e.op == "+=" and target_t == STRING:
+            self._require(e.value, value_t, STRING, f"cannot append {value_t} to string '{e.target.name}'")
+        else:
+            self._require(e.target, target_t, INT, f"operator '{e.op}' needs an int variable, got {target_t}")
+            self._require(e.value, value_t, INT, f"operator '{e.op}' needs an int value, got {value_t}")
+        return target_t
