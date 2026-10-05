@@ -113,3 +113,42 @@ def test_assignment_rules():
         "operator '+=' needs an int variable, got bool",
         "operator '++' needs an int variable, got bool",
     ]
+
+
+def test_call_checks():
+    errs = errors_of("""
+        int add(int a, int b) { return a + b; }
+        int main() {
+            int x = 1;
+            add(1);
+            add(1, "two");
+            x(3);
+            missing();
+            len(5);
+            return add;
+        }""")
+    assert errs == [
+        "'add' expects 2 argument(s), got 1",
+        "argument 2 of 'add' should be int, got string",
+        "'x' is an int variable, not a function",
+        "call to undeclared function 'missing'",
+        "argument 1 of 'len' should be string, got int",
+        "'add' is a function, not a variable",
+    ]
+
+
+def test_return_checks():
+    errs = errors_of("""
+        void v() { return 1; }
+        int a() { return; }
+        int b() { return "s"; }
+        int c(bool f) { if (f) { return 1; } }
+        int d(bool f) { if (f) { return 1; } else { return 2; } }
+        int e() { while (true) { return 1; } }
+        int main() { return 0; }""")
+    assert errs == [
+        "void function 'v' cannot return a value",
+        "'a' must return a value of type int",
+        "'b' returns int, but this expression has type string",
+        "function 'c' must return a value of type int on every path",
+    ]
