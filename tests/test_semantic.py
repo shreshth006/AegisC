@@ -39,3 +39,29 @@ def test_forward_call_and_mutual_recursion():
         bool odd(int n) { if (n == 0) { return false; } return even(n - 1); }
         int main() { print(even(4)); return 0; }""")
     assert errs == []
+
+
+def test_undeclared_and_out_of_scope():
+    errs = errors_of("""
+        int main() {
+            { int inner = 1; print(inner); }
+            print(inner);
+            print(nope);
+            return 0;
+        }""")
+    assert errs == ["use of undeclared identifier 'inner'", "use of undeclared identifier 'nope'"]
+
+
+def test_redeclaration_vs_shadowing():
+    errs = errors_of("""
+        int main() {
+            int x = 1; int x = 2;
+            { int x = 3; print(x); }
+            return x;
+        }""")
+    assert len(errs) == 1 and "'x' is already declared in this scope" in errs[0]
+
+
+def test_parameter_cannot_be_redeclared_in_body():
+    errs = errors_of("int f(int a) { int a = 2; return a; } int main() { return f(1); }")
+    assert "'a' is already declared" in errs[0]
