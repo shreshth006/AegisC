@@ -65,3 +65,51 @@ def test_redeclaration_vs_shadowing():
 def test_parameter_cannot_be_redeclared_in_body():
     errs = errors_of("int f(int a) { int a = 2; return a; } int main() { return f(1); }")
     assert "'a' is already declared" in errs[0]
+
+
+def test_type_errors_in_expressions():
+    errs = errors_of("""
+        int main() {
+            int a = "hello";
+            bool b = 1 + true;
+            string s = "a" - "b";
+            int c = -"x";
+            bool d = !5;
+            bool e = 1 == "1";
+            bool f = 1 && 2;
+            print(a, b, s, c, d, e, f);
+            return 0;
+        }""")
+    assert errs == [
+        "cannot initialise int variable 'a' with a value of type string",
+        "operator '+' cannot be applied to int and bool",
+        "operator '-' cannot be applied to string and string",
+        "operator '-' needs an int operand, got string",
+        "operator '!' needs a bool operand, got int",
+        "cannot compare int with string using '=='",
+        "operator '&&' needs bool operands, got int and int",
+    ]
+
+
+def test_conditions_must_be_bool():
+    errs = errors_of("int main() { int n = 3; while (n) { n--; } if (n) { } return 0; }")
+    assert errs == ["while condition must be bool, got int", "if condition must be bool, got int"]
+
+
+def test_assignment_rules():
+    errs = errors_of("""
+        int main() {
+            int x = 0; string s = "a"; bool b = true;
+            x = "no";
+            s += "ok";
+            s += 1;
+            b += 1;
+            b++;
+            return x;
+        }""")
+    assert errs == [
+        "cannot assign string to 'x' of type int",
+        "cannot append int to string 's'",
+        "operator '+=' needs an int variable, got bool",
+        "operator '++' needs an int variable, got bool",
+    ]
