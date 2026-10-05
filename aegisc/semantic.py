@@ -197,3 +197,32 @@ class SemanticAnalyzer:
             return None
         sym.used = True
         return sym
+
+    def _infer(self, e: A.Expr) -> str:
+        if isinstance(e, A.IntLiteral):
+            return INT
+        if isinstance(e, A.StringLiteral):
+            return STRING
+        if isinstance(e, A.BoolLiteral):
+            return BOOL
+        if isinstance(e, A.Identifier):
+            sym = self._resolve_var(e)
+            return sym.type if sym else ERROR
+        if isinstance(e, A.Unary):
+            t = self._expr(e.operand)
+            want = INT if e.op == "-" else BOOL
+            self._require(e.operand, t, want, f"operator '{e.op}' needs {_a(want)} operand, got {t}")
+            return want
+        if isinstance(e, A.IncDec):
+            sym = self._resolve_var(e.target)
+            t = sym.type if sym else ERROR
+            e.target.ty = t
+            self._require(e.target, t, INT, f"operator '{e.op}' needs an int variable, got {t}")
+            return INT
+        if isinstance(e, A.Assign):
+            return self._assign(e)
+        if isinstance(e, A.Binary):
+            return self._binary(e)
+        if isinstance(e, A.Call):
+            return self._call(e)
+        raise TypeError(f"unknown expression node {e.kind}")
