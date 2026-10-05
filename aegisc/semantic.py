@@ -240,3 +240,31 @@ class SemanticAnalyzer:
             self._require(e.target, target_t, INT, f"operator '{e.op}' needs an int variable, got {target_t}")
             self._require(e.value, value_t, INT, f"operator '{e.op}' needs an int value, got {value_t}")
         return target_t
+
+    def _binary(self, e: A.Binary) -> str:
+        lt, rt = self._expr(e.left), self._expr(e.right)
+        op = e.op
+        if ERROR in (lt, rt):
+            return BOOL if op in ("==", "!=", "<", "<=", ">", ">=", "&&", "||") else ERROR
+        if op == "+" and lt == rt == STRING:
+            return STRING
+        if op in ("+", "-", "*", "/", "%"):
+            if lt != INT or rt != INT:
+                self._err(e, f"operator '{op}' cannot be applied to {lt} and {rt}")
+                return ERROR
+            if op in ("/", "%") and isinstance(e.right, A.IntLiteral) and e.right.value == 0:
+                self._err(e.right, "division by zero")
+            return INT
+        if op in ("<", "<=", ">", ">="):
+            if lt != INT or rt != INT:
+                self._err(e, f"operator '{op}' compares ints, got {lt} and {rt}")
+            return BOOL
+        if op in ("==", "!="):
+            if lt != rt:
+                self._err(e, f"cannot compare {lt} with {rt} using '{op}'")
+            return BOOL
+        if op in ("&&", "||"):
+            if lt != BOOL or rt != BOOL:
+                self._err(e, f"operator '{op}' needs bool operands, got {lt} and {rt}")
+            return BOOL
+        raise ValueError(op)
