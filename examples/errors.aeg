@@ -1,0 +1,12 @@
+// Deliberately broken: each stage has something to say.
+int add(int a, int b) {
+    return a + b;
+}
+
+int main() {
+    int x = "five";          // semantic: type mismatch
+    bool done = add(1);      // semantic: wrong arity, and int assigned to bool
+    while (x) { x--; }       // semantic: condition must be bool
+    print(y);                // semantic: undeclared identifier
+    return 0;
+}
