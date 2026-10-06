@@ -46,3 +46,20 @@ def render_diagnostics(res: CompilationResult) -> str:
     if not diags:
         return "no diagnostics"
     return "\n\n".join(d.format(res.source) for d in diags)
+
+
+def render(res: CompilationResult, stage: str) -> str:
+    parts = []
+    if stage in ("all", "tokens"):
+        parts += [_rule("Lexical analysis: tokens"), render_tokens(res)]
+    if stage in ("all", "ast"):
+        parts += [_rule("Syntax analysis: AST"),
+                  dump(res.ast) if res.ast is not None else "(no AST)"]
+    if stage in ("all", "symbols"):
+        parts += [_rule("Semantic analysis: symbol table"), render_symbols(res)]
+    if stage in ("all", "diagnostics"):
+        parts += [_rule("Diagnostics"), render_diagnostics(res)]
+    if stage == "all":
+        summary = ", ".join(f"{s.name}={s.status}" for s in res.stages.values())
+        parts += [_rule("Summary"), summary]
+    return "\n".join(parts).lstrip("\n")
