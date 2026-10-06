@@ -1,0 +1,20 @@
+// One request fans out into several tasks. Without AegisBudget, each task
+// would get its own allowance; with it, all four draw from the request's budget.
+void analyze(untrusted string r) {
+    int i = 0;
+    while (i < len(r)) { i++; }
+}
+
+void classify(untrusted string r) { print("classify ", len(r)); }
+void index(untrusted string r)    { print("index ", len(r)); }
+void summarize(untrusted string r){ print("summarize ", len(r)); }
+
+int main() {
+    untrusted string request = input();
+    string copy = request;      // copying must not create extra budget
+    spawn analyze(request);
+    spawn classify(copy);
+    spawn index(request);
+    spawn summarize(copy);
+    return 0;
+}
