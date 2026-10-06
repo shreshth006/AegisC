@@ -63,3 +63,25 @@ def render(res: CompilationResult, stage: str) -> str:
         summary = ", ".join(f"{s.name}={s.status}" for s in res.stages.values())
         parts += [_rule("Summary"), summary]
     return "\n".join(parts).lstrip("\n")
+
+
+def main(argv: list[str] | None = None) -> int:
+    ap = argparse.ArgumentParser(prog="aegisc", description="AegisC: a compiler that shows its work.")
+    ap.add_argument("file", help="AegisC source file ('-' for stdin)")
+    ap.add_argument("--stage", choices=CHOICES, default="all", help="which stage output to print")
+    ap.add_argument("--json", action="store_true", help="emit every stage as JSON (for the visualizer)")
+    ap.add_argument("--version", action="version", version=f"aegisc {__version__}")
+    args = ap.parse_args(argv)
+
+    try:
+        source = sys.stdin.read() if args.file == "-" else open(args.file, encoding="utf-8").read()
+    except OSError as exc:
+        print(f"aegisc: cannot read {args.file}: {exc.strerror}", file=sys.stderr)
+        return 2
+
+    res = compile_source(source)
+    if args.json:
+        print(json.dumps(res.to_dict(), indent=2))
+    else:
+        print(render(res, args.stage))
+    return 0 if res.ok else 1
