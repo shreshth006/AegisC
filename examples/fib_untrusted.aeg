@@ -1,0 +1,15 @@
+// Classic amplification: an attacker-chosen n drives exponential recursion.
+// PROBE (AegisBudget) will thread one shared budget through both recursive
+// calls, so the recursion tree can grow but the computation allowed cannot.
+int fib(untrusted int n) {
+    if (n <= 1) {
+        return n;
+    }
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main() {
+    untrusted int n = input_int();
+    print("fib(", n, ") = ", fib(n));
+    return 0;
+}
