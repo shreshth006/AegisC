@@ -75,3 +75,30 @@ class CompilationResult:
             "source": self.source,
             "stages": [s.to_dict() for s in self.stages.values()],
         }
+
+
+def compile_source(source: str) -> CompilationResult:
+    stages = {name: StageResult(name) for name in STAGES}
+
+    # Lexing always runs to completion. Bad characters are dropped and
+    # reported, and the parser still gets the remaining tokens so it can
+    # show further errors.
+    tokens, ldiags = tokenize(source)
+    lex = stages["lexer"]
+    lex.output, lex.diagnostics = tokens, ldiags
+    lex.status = "error" if has_errors(ldiags) else "ok"
+
+    prog, pdiags = parse(tokens)
+    par = stages["parser"]
+    par.output, par.diagnostics = prog, pdiags
+    par.status = "error" if has_errors(pdiags) else "ok"
+
+    # Type checking a tree with holes in it gives misleading errors, so
+    # semantic analysis only runs on a syntactically clean program.
+    if lex.status == "ok" and par.status == "ok":
+        table, sdiags = analyze(prog)
+        sem = stages["semantic"]
+        sem.output, sem.diagnostics = table, sdiags
+        sem.status = "error" if has_errors(sdiags) else "ok"
+
+    return CompilationResult(source, stages)
