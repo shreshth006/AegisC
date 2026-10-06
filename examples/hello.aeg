@@ -1,0 +1,13 @@
+// The smallest useful AegisC program.
+int square(int x) {
+    return x * x;
+}
+
+int main() {
+    int total = 0;
+    for (int i = 1; i <= 5; i++) {
+        total += square(i);
+    }
+    print("sum of squares 1..5 = ", total);
+    return 0;
+}
