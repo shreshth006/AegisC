@@ -42,3 +42,36 @@ class StageResult:
             "diagnostics": [d.to_dict() for d in self.diagnostics],
             "output": out,
         }
+
+
+@dataclass
+class CompilationResult:
+    source: str
+    stages: dict[str, StageResult]
+
+    @property
+    def ok(self) -> bool:
+        return all(s.status == "ok" for s in self.stages.values())
+
+    @property
+    def tokens(self) -> list[Token] | None:
+        return self.stages["lexer"].output
+
+    @property
+    def ast(self) -> A.Program | None:
+        return self.stages["parser"].output
+
+    @property
+    def symbols(self) -> SymbolTable | None:
+        return self.stages["semantic"].output
+
+    @property
+    def diagnostics(self) -> list[Diagnostic]:
+        return [d for s in self.stages.values() for d in s.diagnostics]
+
+    def to_dict(self) -> dict:
+        return {
+            "ok": self.ok,
+            "source": self.source,
+            "stages": [s.to_dict() for s in self.stages.values()],
+        }
