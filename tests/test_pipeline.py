@@ -54,3 +54,22 @@ def test_json_shape_is_stable():
 def test_examples_compile_as_expected(name, ok):
     res = compile_source((EXAMPLES / name).read_text())
     assert res.ok is ok
+
+
+def test_syntax_errors_example_reports_exactly_three(capsys):
+    res = compile_source((EXAMPLES / "syntax_errors.aeg").read_text())
+    assert len(res.stages["parser"].diagnostics) == 3
+
+
+def test_cli_exit_codes_and_json(capsys, tmp_path):
+    good = tmp_path / "g.aeg"
+    good.write_text("int main() { return 0; }")
+    assert main([str(good), "--json"]) == 0
+    assert json.loads(capsys.readouterr().out)["ok"] is True
+
+    bad = tmp_path / "b.aeg"
+    bad.write_text("int main() { return x; }")
+    assert main([str(bad), "--stage", "diagnostics"]) == 1
+    assert "use of undeclared identifier 'x'" in capsys.readouterr().out
+
+    assert main([str(tmp_path / "missing.aeg")]) == 2
