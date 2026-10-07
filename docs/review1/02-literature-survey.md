@@ -36,3 +36,34 @@ The survey covers four threads that AegisC draws on: (A) algorithmic-complexity 
 | D2 | Compiler Explorer (godbolt.org). | Shows source alongside generated assembly for real compilers. | Shows only the final output. The front-end and middle-end phases aren't visible and nothing is explained. |
 | D3 | P. Lewis et al., *Retrieval-Augmented Generation for Knowledge-Intensive NLP Tasks*, NeurIPS 2020 (arXiv:2005.11401). | Grounds generation in retrieved documents. | The technique AegisC's tutor uses to ground answers in course notes. |
 | D4 | Recent studies of LLM course assistants in CS courses, e.g. arXiv:2509.08862 (student interaction with LLM course assistants) and TAMIGO, arXiv:2407.16805 (LLM-assisted viva and code assessment). | Evidence that LLM assistants are used, and are useful, in CS teaching. | General-purpose assistants. They aren't wired into a compiler's actual internal state. |
+
+## Notes on sources
+
+- The brainstorm that led to AegisBudget also mentioned an NEC patent application on statically identifying user-controlled loops and recursion. We **could not locate it**, so it is excluded until someone finds the actual publication number. Static detection of input-controlled loops (taint analysis plus loop analysis) is well established in any case, and we don't claim it as novel (see [Novelty](03-novelty.md)).
+- This survey is not a patent prior-art search. A formal search is needed before any filing.
+
+## Summary of the gap
+
+| Capability | A | B1 | B2 | B3 | B4 | C | **AegisC** |
+|---|---|---|---|---|---|---|---|
+| Finds or knows about expensive input-driven work | ✓ | | | | | ✓ | ✓ |
+| Enforces a limit at run time | | ✓ | ✓ | ✓ | ✓ | | ✓ |
+| Inserted automatically by a compiler | | | ✓ | ✓ | | | ✓ |
+| Charges work to the **originating input lineage** | | ~ | | | ✓ | | ✓ |
+| Budget **can't be duplicated** across copies and fan-out | | | | | | ~ (assets) | ✓ |
+| Visualised and explained to a learner | | | | | | | ✓ |
+
+## Reference links
+
+- A1: https://www.usenix.org/conference/12th-usenix-security-symposium/denial-service-algorithmic-complexity-attacks
+- A2: https://cwe.mitre.org/data/definitions/407
+- A3: https://arxiv.org/abs/1708.08437
+- B1: https://www.usenix.org/legacy/event/osdi99/full_papers/banga/banga_html/banga.html
+- B2: https://infoscience.epfl.ch/record/52665
+- B3: https://docs.rs/wasm-instrument
+- B4: https://arxiv.org/abs/2205.00056
+- C1: https://www.cs.cornell.edu/sweirich/research.htm (POPL 2000)
+- C2: https://www.cs.yale.edu/homes/hoffmann/papers/HAH12Toplas.pdf (journal version, ACM TOPLAS 2012)
+- C3: https://arxiv.org/abs/1902.06056
+- D3: https://arxiv.org/abs/2005.11401
+- D4: https://arxiv.org/abs/2509.08862 · https://arxiv.org/abs/2407.16805
