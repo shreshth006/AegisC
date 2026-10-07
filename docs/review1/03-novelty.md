@@ -41,3 +41,13 @@ The new part is the **combination** of four things. None of the prior works in t
 | Effect of fanning out to N tasks | one global counter | depends on manual binding | N tasks, one budget, by construction |
 | Where checks go | every block or branch | kernel and application hooks | **only** at amplification points that touch tainted data |
 | Effect on untainted code | metered | accounted | **untouched**, so no overhead on trusted paths |
+
+## 3.3 Educational novelty
+
+1. **Every phase, on the student's own program.** Tokens, AST, scope tree, diagnostics, TAC, CFG, the optimisation log and the PROBE report are all clickable and cross-linked by source position.
+2. **Grounded "Why?".** Because each transformation is recorded as a structured event (rule, before, after, location), the tutor isn't guessing from source text. It receives the compiler's actual decision and retrieves the matching passage from the course notes. For example, `t1 = 10 + 20 → t1 = 30` is sent to the tutor as `{rule: constant_folding, ...}`.
+3. **Security made visible.** Students watch provenance spread through the AST and see where the compiler inserts budget guards. That connects data-flow analysis, which students often find abstract, to a concrete security outcome.
+
+## 3.4 Patent-orientation note (India, CRI Guidelines)
+
+Section 3(k) of the Indian Patents Act excludes "a computer programme per se or algorithms". The invention should therefore be framed around its **technical effect**, which is preventing processor-time, stack and memory exhaustion caused by external inputs, through compiler-generated resource-control instructions and a provenance-carried capability. It should not be framed as "an algorithm for computing complexity". Whether to file is for the university IPR cell to decide after a formal prior-art search. This document is not a novelty opinion.
