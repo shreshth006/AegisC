@@ -32,3 +32,25 @@ def test_lexer_errors_still_produce_tokens_and_parse_attempt():
 def test_warnings_do_not_fail_compilation():
     res = compile_source("int helper() { return 1; }")   # no main -> warning only
     assert res.ok and res.diagnostics
+
+
+def test_json_shape_is_stable():
+    d = compile_source("int main() { untrusted int n = input_int(); return n; }").to_dict()
+    json.dumps(d)
+    assert [s["stage"] for s in d["stages"]] == ["lexer", "parser", "semantic"]
+    lexer, parser, semantic = d["stages"]
+    assert lexer["output"][0] == {"type": "INT", "category": "keyword", "lexeme": "int",
+                                  "value": None, "line": 1, "col": 1}
+    assert parser["output"]["kind"] == "Program"
+    scopes = semantic["output"]["scopes"]
+    main_scope = next(s for s in scopes if s["name"] == "fn main")
+    assert main_scope["symbols"][0]["untrusted"] is True
+
+
+@pytest.mark.parametrize("name,ok", [
+    ("hello.aeg", True), ("fib_untrusted.aeg", True), ("fanout.aeg", True),
+    ("errors.aeg", False), ("syntax_errors.aeg", False),
+])
+def test_examples_compile_as_expected(name, ok):
+    res = compile_source((EXAMPLES / name).read_text())
+    assert res.ok is ok
