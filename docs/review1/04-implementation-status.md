@@ -24,3 +24,22 @@ python -m aegisc examples/syntax_errors.aeg --stage diagnostics   # parser recov
 python -m aegisc examples/errors.aeg --stage diagnostics          # semantic errors
 python -m pytest -q
 ```
+
+## Plan for the remaining ~75%
+
+| Milestone | Contents |
+|---|---|
+| M2: middle end | TAC generation, basic blocks and CFG, constant folding/propagation, dead-code elimination, optimisation event log |
+| M3: PROBE | Provenance data-flow analysis, amplification detection, budget threading, guard insertion, C code generation, attack-vs-benign demo with operation counts |
+| M4: visualizer | Web UI with linked stage panels and the PROBE overlay |
+| M5: tutor | RAG index over course notes; "Why?" endpoint that takes structured compiler events; evaluation question set |
+| M6: evaluation and report | Overhead and mitigation measurements; tutor answer quality; final write-up |
+
+## Team split (suggested)
+
+| Area | Owner |
+|---|---|
+| Middle end (TAC, CFG, optimiser) | _member 1_ |
+| PROBE pass and C back end | _member 2_ |
+| Web visualizer | _member 3_ |
+| LLM tutor and RAG | _member 4_ |
